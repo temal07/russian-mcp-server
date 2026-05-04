@@ -1,10 +1,11 @@
+from datetime import date
 from youtube_transcript_api import YouTubeTranscriptApi
 from dotenv import load_dotenv
 import os
 from googleapiclient.discovery import build
 import json
 from urllib.parse import urlparse, parse_qs
-
+import random
 
 # Build youtube
 load_dotenv()
@@ -27,12 +28,18 @@ def get_channel_id(handle: str) -> str:
     return channelID
 
 
-def get_video_id(url: str) -> str:
+def get_random_video_id(channel_id: str) -> str:
     """Get the ID of a video"""
-    parsed = urlparse(url)
-
-    if parsed.hostname == "youtu.be":
-        return parsed.path[1:]
+    response = youtube.search().list(
+        part="id",
+        channel_id=channel_id,
+        order="date",
+        maxResults=25,
+        type="video"
+    ).execute()
     
-    return parse_qs(parsed.query)["v"][0]
+    items = response["items"]
+
+    return random.choice(items)["id"]["videoId"]
+
 
