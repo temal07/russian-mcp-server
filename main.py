@@ -1,8 +1,8 @@
 from mcp.server.fastmcp import FastMCP
 import os
 from deep_translator import GoogleTranslator
-from tools.tools import get_channel_id, get_random_video_id
-from youtube_transcript_api import YouTubeTranscriptApi
+from tools.tools import get_channel_id, get_random_video_url
+from youtube_transcript_api import TranscriptList, YouTubeTranscriptApi
 import json
 import random
 
@@ -10,16 +10,6 @@ app = FastMCP("russian-mcp-server")
 
 RU_MCP_API_KEY = os.getenv("RU_MCP_API_KEY")
 transcript_api = YouTubeTranscriptApi()
-
-############# LIST OF CHANNELS ################
-channels = [
-    "EasyRussianVideos",
-    "1420channel",
-    "ComprehensibleRussian"
-    "RussianLevel1",
-]
-
-channel_IDs = []
 
 @app.tool()
 def translate(text: str, language: str = "russian") -> str:
@@ -29,24 +19,25 @@ def translate(text: str, language: str = "russian") -> str:
 
 @app.tool()
 def get_word_of_the_day() -> str:
+    """Generates a word of the day and use cases"""
     with open("WOTD.md", "r", encoding="utf-8") as f:
         instructions = f.read()
-    return instructions
-
     
 
 @app.tool()
-def get_video_transcript(url) -> str:
+def get_video_transcript() -> str:
     """Get the video transcript of a video by video ID"""
+    url = get_random_video_url()
 
-    channelID = get_channel_id("EasyRussianVideos")
-    video_id = get_random_video_id(url)
+    # Gets the ID of the video by splitting www.youtube.com/watch?v={videoID} to the value 
+    # after v=
+    video_id = url.split("v=")[-1]
 
     transcript = transcript_api.fetch(video_id=video_id, languages=["ru", "en"], preserve_formatting=False)
-    return json.dumps([{"text": s.text, "start": s.start, "duration": s.duration} for s in transcript])
+    if transcript is None:
+        get_video_transcript()
 
-
-
+    return "\n".join([snippet.text for snippet in transcript])
 
 
 app.run()
