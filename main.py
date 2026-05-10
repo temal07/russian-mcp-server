@@ -11,6 +11,8 @@ app = FastMCP("russian-mcp-server")
 RU_MCP_API_KEY = os.getenv("RU_MCP_API_KEY")
 transcript_api = YouTubeTranscriptApi()
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 @app.tool()
 def translate(text: str, language: str = "russian") -> str:
     """Translate text to the given language"""
@@ -18,11 +20,27 @@ def translate(text: str, language: str = "russian") -> str:
 
 
 @app.tool()
-def get_word_of_the_day() -> str:
+def get_word_of_the_day(level : str = "A1") -> str:
     """Generates a word of the day and use cases"""
-    with open("WOTD.md", "r", encoding="utf-8") as f:
-        instructions = f.read()
-    
+    with open(os.path.join(BASE_DIR, "WOTD.md"), "r", encoding="utf-8") as f:
+        instructions = f.read().replace("{level}", level)
+        
+    return instructions
+
+
+@app.tool()
+def drill_convo(level: str = "A1") -> str:
+    """Engages in a conversation for the given level"""
+    with open(os.path.join(BASE_DIR, "DRILL.md"), "r", encoding="utf-8") as f:
+        instructions = f.read().replace("{level}", level)
+
+    return instructions
+
+
+@app.tool()
+def video_to_watch():
+    return get_random_video_url()
+
 
 @app.tool()
 def get_video_transcript() -> str:
@@ -34,8 +52,6 @@ def get_video_transcript() -> str:
     video_id = url.split("v=")[-1]
 
     transcript = transcript_api.fetch(video_id=video_id, languages=["ru", "en"], preserve_formatting=False)
-    if transcript is None:
-        get_video_transcript()
 
     return "\n".join([snippet.text for snippet in transcript])
 
