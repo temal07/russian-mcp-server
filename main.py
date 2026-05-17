@@ -36,12 +36,6 @@ def drill_convo(level: str = "A1") -> str:
 
     return instructions
 
-
-@app.tool()
-def video_to_watch():
-    return get_random_video_url()
-
-
 @app.tool()
 def get_video_transcript(url: str | None = None) -> str:
     """Get the transcript of a video. If no URL is given, picks a random one."""
