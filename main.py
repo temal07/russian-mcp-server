@@ -43,11 +43,12 @@ def video_to_watch():
 
 
 @app.tool()
-def get_video_transcript() -> str:
-    """Get the video transcript of a video by video ID"""
-    url = get_random_video_url()
+def get_video_transcript(url: str | None = None) -> str:
+    """Get the transcript of a video. If no URL is given, picks a random one."""
+    if url is None:
+        url = get_random_video_url()
 
-    # Gets the ID of the video by splitting www.youtube.com/watch?v={videoID} to the value 
+    # Gets the ID of the video by splitting www.youtube.com/watch?v={videoID} to the value
     # after v=
     video_id = url.split("v=")[-1]
 
